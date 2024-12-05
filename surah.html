@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Surah</title>
+    <!-- CDN CSS FastBootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/fastbootstrap@2.2.0/dist/css/fastbootstrap.min.css" rel="stylesheet" integrity="sha256-V6lu+OdYNKTKTsVFBuQsyIlDiRWiOmtC8VQ8Lzdm2i4=" crossorigin="anonymous">
+    <!-- CDN Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+    <!-- CDN Jquery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    .arabic {
+        font-size: 1.8rem;
+        text-align: right;
+        font-family: 'Amiri', serif;
+        margin-bottom: 10px;
+    }
+
+    .translation {
+        font-size: 1rem;
+        text-align: left;
+        margin-top: 10px;
+    }
+
+    .verse-number {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-left: 0.3rem;
+    }
+
+    .back-button {
+        margin-bottom: 20px;
+        text-decoration: none;
+        font-size: 1rem;
+        color: #007bff;
+    }
+
+    .back-button:hover {
+        text-decoration: underline;
+    }
+
+    .verse-divider {
+        border-top: 1px solid #ddd;
+        margin: 3rem 0;
+    }
+
+    #surahInfo {
+        margin-bottom: 48px;
+    }
+</style>
+<body>
+    <div class="container py-4">
+        <!-- Tombol kembali -->
+        <a href="index.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Kembali ke Daftar Surah
+        </a>
+
+        <!-- Header Surah -->
+        <div class="text-center mb-6">
+            <h1 id="surahTitle">Loading...</h1>
+            <p id="surahInfo">Menunggu data...</p>
+        </div>
+
+        <!-- Daftar Ayat -->
+        <div id="ayatList">
+            <!-- Ayat-ayat Al-Qur'an -->
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Ambil ID Surah dari URL Parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const surahId = urlParams.get('id') || 1; // Default ke Surah 1 (Al-Fatihah)
+
+            // URL API untuk mengambil data surah
+            const apiUrl = `https://api.npoint.io/99c279bb173a6e28359c/data`;
+
+            // Mengambil data menggunakan AJAX
+            $.getJSON(apiUrl, function (response) {
+                const surah = response.find(s => s.nomor == surahId); // Cari surah berdasarkan ID
+
+                if (surah) {
+                    // Atur judul surah menggunakan nama asma (bahasa Arab)
+                    $("#surahTitle").text(surah.asma); // Menampilkan nama surah dalam bahasa Arab (asma)
+
+                    // Tampilkan informasi surah (arti dan jumlah ayat)
+                    $("#surahInfo").text(`${surah.arti} - ${surah.ayat} Ayat`);
+
+                    // Ambil daftar ayat
+                    const apiAyat = `https://api.npoint.io/99c279bb173a6e28359c/surat/${surahId}`;
+                    $.getJSON(apiAyat, function (data) {
+                        let ayatContent = "";
+                        data.forEach(function (ayat) {
+                            ayatContent += `
+                                <div class="verse">
+                                    <div class="row">
+                                        <div class="col-md-6 translation">
+                                            ${ayat.id}
+                                        </div>
+                                        <div class="col-md-6 arabic">
+                                            ${ayat.ar}
+                                            <span class="verse-number">(${ayat.nomor})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="verse-divider"></div> <!-- Garis pemisah antar ayat -->
+                            `;
+                        });
+
+                        // Tampilkan daftar ayat
+                        $("#ayatList").html(ayatContent);
+                    }).fail(function () {
+                        $("#ayatList").html("<p class='text-danger text-center'>Gagal memuat ayat.</p>");
+                    });
+                } else {
+                    $("#surahTitle").text("Surah Tidak Ditemukan");
+                    $("#ayatList").html("<p class='text-danger text-center'>Tidak ada data untuk surah ini.</p>");
+                }
+            }).fail(function () {
+                $("#surahTitle").text("Gagal Memuat Surah");
+                $("#ayatList").html("<p class='text-danger text-center'>Gagal memuat data surah.</p>");
+            });
+        });
+    </script>
+</body>
+</html>

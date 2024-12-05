@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al-Qur'an</title>
+    <!-- CDN CSS FastBootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/fastbootstrap@2.2.0/dist/css/fastbootstrap.min.css" rel="stylesheet" integrity="sha256-V6lu+OdYNKTKTsVFBuQsyIlDiRWiOmtC8VQ8Lzdm2i4=" crossorigin="anonymous">
+    <!-- CDN Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" 
+    referrerpolicy="no-referrer" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- CDN Jquery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- CDN JS FastBootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Al-Qur'an</h1>
+
+        <div class="mb-4">
+            <input type="text" class="form-control search-bar" id="searchSurah" placeholder="Search Surah...">
+        </div>
+
+        <div class="row" id="surahList">
+            <!-- Daftar surah -->
+        </div>
+
+        <!-- modal -->
+        <div class="modal" tabindex="-1" id="surahModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalSurahName">Surah Name</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="modalContent">
+                        <!-- Isi ayat -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let suwar = [];
+    
+            $.ajax({
+                method: "GET",
+                url: "https://api.npoint.io/99c279bb173a6e28359c/data",
+                dataType: "json",
+                success: function (response) {
+                    suwar = response;
+                    let newElement = "";
+                    suwar.forEach(surah => {
+                        newElement += `
+                            <div class="col-md-4 mb-4">
+                                <div class="card surah-card" data-id="${surah.nomor}">
+                                    <div class="card-body">
+                                        <strong class="card-title">${surah.nama}</strong> (${surah.arti})
+                                        <p class="card-text">
+                                            ${surah.asma}<br>
+                                            ${surah.type} - ${surah.ayat} Ayat
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    $("#surahList").html(newElement);
+    
+                    $(".surah-card").on("click", function () {
+                        const surahId = $(this).data("id");
+                        window.location.href = `surah.html?id=${surahId}`; 
+                    });
+                },
+                error: function (error) {
+                    alert("Gagal memuat daftar surah.");
+                }
+            });
+    
+            // Pencarian Surah
+            $("#searchSurah").on("input", function () {
+                const query = $(this).val().toLowerCase();
+                const filteredSuwar = suwar.filter(surah => {
+                    return surah.nama.toLowerCase().includes(query);
+                });
+    
+                let newElement = "";
+                filteredSuwar.forEach(surah => {
+                    newElement += `
+                        <div class="col-md-4 mb-4">
+                            <div class="card surah-card" data-id="${surah.nomor}">
+                                <div class="card-body">
+                                    <strong class="card-title">${surah.nama}</strong> (${surah.arti})
+                                    <p class="card-text">
+                                        ${surah.asma}<br>
+                                        ${surah.type} - ${surah.ayat} Ayat
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                $("#surahList").html(newElement);
+    
+                // Rebind event listener untuk card setelah pencarian
+                $(".surah-card").on("click", function () {
+                    const surahId = $(this).data("id");
+                    window.location.href = `surah.html?id=${surahId}`;
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>
